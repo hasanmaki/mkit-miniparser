@@ -1,0 +1,22 @@
+# configura loguru logger here
+handlers:
+  - sink: ext://sys.stderr
+    format: "<level>{level:}</>:<magenta>{name: >13}.{function:}</><le>[{line:}]</>-> <cyan><b>{message}</></>"
+    enqueue: true
+    diagnose: true
+    backtrace: true
+  - sink: file.log
+    format: "{time:YYYY-MM-DD HH:mm:ss}<level>{level:}</>.{name:}.{function:}.{line:}.{message}"
+    colorize: false
+    enqueue: true
+    serialize: true
+levels:
+  - name: MATRIX
+    "no": 13
+    icon: ¤
+    color: ""
+extra:
+  common_to_all: default
+activation:
+  - ["my_module.secret", false]
+  - ["another_library.module", true]
