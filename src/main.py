@@ -11,9 +11,9 @@ from src.config.cfg_logging import setup_logging
 async def lifespan(app: FastAPI):  # noqa: ARG001, RUF029
     """Lifespan context manager for FastAPI app."""
     setup_logging()
-    logger.info("Starting up...")
+    logger.bind(request_id="app-startup").info("Starting up...")
     yield
-    logger.info("Shutting down...")
+    logger.bind(request_id="app-shutdown").info("Shutting down...")
 
 
 app = FastAPI(lifespan=lifespan)
