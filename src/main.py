@@ -15,11 +15,12 @@ glob_config: AppSettings = get_settings("config.toml")
 async def lifespan(app: FastAPI):  # noqa: RUF029
     """Lifespan context manager for FastAPI app."""
     setup_logging()
-    logger.bind(request_id="app-startup").info("Starting up...")
+    logger.info("Starting up...")
     # set app state
     app.state.settings = glob_config
     yield
-    logger.bind(request_id="app-shutdown").info("Shutting down...")
+    app.state.settings = None
+    logger.info("Shutting down...")
 
 
 app = FastAPI(lifespan=lifespan)
