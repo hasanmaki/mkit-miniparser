@@ -5,12 +5,12 @@ handlers:
     enqueue: true
     diagnose: true
     backtrace: true
-  - sink: file.log
+  - sink: ./logs/file.log
     format: "{time:YYYY-MM-DD HH:mm:ss}<level>{level:}</>.{name:}.{function:}.{line:}.{message}"
     level: INFO
     colorize: false
     serialize: true
-  - sink: error.log
+  - sink: ./logs/error.log
     format: "{time:YYYY-MM-DD HH:mm:ss}<level>{level:}</>.{name:}.{function:}.{line:}.{message}"
     level: ERROR
     colorize: false
