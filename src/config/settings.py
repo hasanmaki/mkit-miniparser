@@ -13,6 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict, TomlConfigSettin
 class UrlSettings(BaseModel):
     base_url: str
     timeout: int = Field(gt=0, description="Timeout dalam detik")
+    retries: int = Field(ge=0, description="Jumlah retry jika request gagal")
 
     @field_validator("base_url", mode="before")
     @classmethod
