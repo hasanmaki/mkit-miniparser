@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+import httpx
 import uvicorn
 from fastapi import FastAPI
 from loguru import logger
@@ -12,14 +13,15 @@ glob_config: AppSettings = get_settings("config.toml")
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):  # noqa: RUF029
+async def lifespan(app: FastAPI):
     """Lifespan context manager for FastAPI app."""
     setup_logging()
     logger.info("Starting up...")
-    # set app state
     app.state.settings = glob_config
+    app.state.request_client = httpx.AsyncClient()
     yield
     app.state.settings = None
+    await app.state.request_client.aclose()
     logger.info("Shutting down...")
 
 
