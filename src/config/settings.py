@@ -5,34 +5,49 @@ settings ini akan di store pada app state.settings untuk di akses pada seluruh b
 
 # ruff: noqa
 from functools import lru_cache
-from urllib.parse import urlparse
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict, TomlConfigSettingsSource
+from urllib.parse import urlparse
 
 
-class UrlSettings(BaseModel):
+class ApiSettings(BaseModel):
     base_url: str
-    timeout: int = Field(gt=0, description="Timeout dalam detik")
-    retries: int = Field(ge=0, description="Jumlah retry jika request gagal")
+    username: str
+    password: str
+    pin: str
+    retries: int = 3
+    timeout: int = 10
+    wait: int = 10
 
-    @field_validator("base_url", mode="before")
+    @field_validator("base_url")
     @classmethod
     def validate_base_url(cls, v: str) -> str:
-        if not v.startswith("http"):
-            raise ValueError("base_url harus diawali dengan http atau https")
-        # Check port presence
         parsed = urlparse(v)
-        if not parsed.port:
-            raise ValueError(
-                "base_url harus mengandung port (misal: http://localhost:8000)"
-            )
-        return v.rstrip("/")
+        if not all([parsed.scheme, parsed.netloc]):
+            raise ValueError("Invalid URL format")
+        return v
+
+
+class EndpointSettings(BaseModel):
+    login: str
+    logout: str
+    balance: str
+    profile: str
+
+
+class ModuleConfig(BaseModel):
+    api: ApiSettings
+    endpoint: EndpointSettings | None = None
 
 
 class AppSettings(BaseSettings):
-    model_config = SettingsConfigDict(toml_file=None, extra="forbid")
+    digipos: ModuleConfig
 
-    url: UrlSettings
+    model_config = SettingsConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+        from_attributes=True,
+    )
 
     @classmethod
     def settings_customise_sources(
@@ -47,8 +62,10 @@ class AppSettings(BaseSettings):
 
 
 @lru_cache
-def get_settings(toml_path: str | None = None) -> AppSettings:
-    class _CustomSettings(AppSettings):
-        model_config = SettingsConfigDict(toml_file=toml_path, extra="forbid")
-
-    return _CustomSettings()  # type: ignore
+def get_settings(toml_file_path: str | None) -> AppSettings:
+    """Get application settings with caching, without mutating global config."""
+    if not toml_file_path:
+        raise ValueError("TOML file path must be provided")
+    # Dynamically set the TOML file path in model_config
+    AppSettings.model_config["toml_file"] = toml_file_path
+    return AppSettings()  # type: ignore

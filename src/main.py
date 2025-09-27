@@ -5,11 +5,12 @@ import uvicorn
 from fastapi import FastAPI
 from loguru import logger
 
+from config.settings import get_settings
 from dpends import SettingsDeps
-from src.config import AppSettings, get_settings
+from src.api import register_routers
 from src.config.cfg_logging import setup_logging
 
-glob_config: AppSettings = get_settings("config.toml")
+glob_config: SettingsDeps = get_settings("test_config.toml")
 
 
 @asynccontextmanager
@@ -18,6 +19,8 @@ async def lifespan(app: FastAPI):
     setup_logging()
     logger.info("Starting up...")
     app.state.settings = glob_config
+    # test print
+    logger.debug(f"Settings: {app.state.settings.model_dump_json(indent=2)}")
     app.state.request_client = httpx.AsyncClient()
     yield
     app.state.settings = None
@@ -26,6 +29,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+# register routers
+register_routers(app)
 
 
 @app.get("/")

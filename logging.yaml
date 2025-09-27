@@ -1,6 +1,6 @@
 # configura loguru logger here
 handlers:
-  - sink: ext://sys.stderr
+  - sink: ext://sys.stdout
     format: "<level>{level:}</>:<magenta>{name: >13}.{function:}</><le>[{line:}]</>-> <cyan><b>{message}</></><y>[{extra}]</>"
     enqueue: true
     diagnose: true
